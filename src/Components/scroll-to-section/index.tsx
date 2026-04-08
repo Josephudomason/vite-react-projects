@@ -8,7 +8,7 @@ type DataSections = {
 
 
 export default function ScrollToSection() {
-  const ref = useRef();
+  const ref = useRef<HTMLDivElement | null>(null);
   const data: DataSections[] = [
     {
       label: 'First Card',
@@ -58,7 +58,11 @@ export default function ScrollToSection() {
   ]
 
   function handleScrollToSection() {
-    let pos = ref.current.getBoundingClientRect().top;
+    if (!ref.current) {
+      return;
+    }
+
+    const pos = ref.current.getBoundingClientRect().top + window.scrollY;
 
     window.scrollTo({
       top: pos,
@@ -72,7 +76,7 @@ export default function ScrollToSection() {
         onClick={handleScrollToSection}
       >Click to scroll</button>
       {
-        data.map((item, index) => <div ref={index === 3 ? ref : null} style={item.style}>
+        data.map((item, index) => <div key={item.label} ref={index === 3 ? ref : null} style={item.style}>
           <h1>{item.label}</h1>
         </div>)
       }

@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react"
+import { useState } from "react"
 
 
 export default function ColorIndex() {
   const [typeOfColor, setTypeOfColor] = useState('hex');
-  const [color, setColor] = useState('#000000');
+  const [color, setColor] = useState('#A3A3A3');
 
   function randomColorUtility(length: number) {
     return Math.floor(Math.random() * length)
@@ -28,23 +28,29 @@ export default function ColorIndex() {
     setColor(`rgb(${r}, ${g}, ${b})`);
   }
 
-  useEffect(() => {
-    if (typeOfColor === 'rgb') handleRandomRgbColor();
-    else handleRandomHexColor();
-  }, [typeOfColor])
+  function handleColorTypeChange(nextType: 'hex' | 'rgb') {
+    setTypeOfColor(nextType);
+
+    if (nextType === 'rgb') {
+      handleRandomRgbColor();
+      return;
+    }
+
+    handleRandomHexColor();
+  }
 
   return (
     <div className="flex flex-col min-h-screen justify-center" style={{ backgroundColor: color }}>
 
       <div className="space-x-4 flex justify-center sm:mx-5 sm:my-5">
         <button
-          onClick={() => setTypeOfColor('rgb')}
+          onClick={() => handleColorTypeChange('rgb')}
           className="bg-white py-2 px-1 shadow hover:shadow-lg  rounded hover:bg-gray-400 hover:text-white">
           Create RGB Color
         </button>
 
         <button
-          onClick={() => setTypeOfColor('hex')}
+          onClick={() => handleColorTypeChange('hex')}
           className="bg-white py-2 px-1 shadow hover:shadow-lg  rounded hover:bg-gray-400 hover:text-white">
           Create HEX Color
         </button>

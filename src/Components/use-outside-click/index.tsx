@@ -1,12 +1,14 @@
-import { useEffect } from "react"
+import { useEffect, type RefObject } from "react"
 
-
-export default function useOutSideClick(ref, handler) {
-
+export default function useOutSideClick<T extends HTMLElement>(
+  ref: RefObject<T | null>,
+  handler: (event: MouseEvent | TouchEvent) => void,
+) {
   useEffect(() => {
-    function listener(event: void) {
-      if (!ref.current || ref.current.contains(event.target)) {
+    function listener(event: MouseEvent | TouchEvent) {
+      const element = ref.current;
 
+      if (!element || !(event.target instanceof Node) || element.contains(event.target)) {
         return;
       }
 
@@ -19,9 +21,6 @@ export default function useOutSideClick(ref, handler) {
     return () => {
       document.removeEventListener('mousedown', listener);
       document.removeEventListener('touchstart', listener);
-    }
-
-  }, [handler, ref])
-
-
+    };
+  }, [handler, ref]);
 }

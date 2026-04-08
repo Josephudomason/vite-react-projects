@@ -1,29 +1,41 @@
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import Card from "./user";
 
+type GithubUser = {
+  avatar_url: string;
+  followers: number;
+  following: number;
+  public_repos: number;
+  url: string;
+  name: string;
+  login: string;
+  created_at: string;
+};
 
 export default function ProfileFinder() {
   const [userName, setUserName] = useState<string>('sangammukherjee')
-  const [userData, setUserData] = useState(null)
+  const [userData, setUserData] = useState<GithubUser | null>(null)
   const [loading, setloading] = useState<boolean>(false);
   const [error, setError] = useState<boolean>(false);
 
-
-
-  async function fetchGithub() {
+  const fetchGithub = useCallback(async (searchUser: string) => {
     try {
       setloading(true);
       setError(false);
-      const res = await fetch(`https://api.github.com/users/${userName}`);
+      const trimmedUser = searchUser.trim();
+
+      if (!trimmedUser) {
+        throw new Error('Username is required');
+      }
+
+      const res = await fetch(`https://api.github.com/users/${trimmedUser}`);
       if (!res.ok) {
         throw new Error('User not found');
       }
-      const data = await res.json();
+      const data: GithubUser = await res.json();
       console.log(data);
       if (data) {
         setUserData(data);
-        setloading(true);
-        setUserName('');
       }
     } catch (e) {
       console.log(e);
@@ -32,15 +44,15 @@ export default function ProfileFinder() {
     } finally {
       setloading(false);
     }
-  }
+  }, []);
 
   function handleSubmit() {
-    fetchGithub();
+    void fetchGithub(userName);
   }
 
   useEffect(() => {
-    fetchGithub();
-  }, [])
+    void fetchGithub('sangammukherjee');
+  }, [fetchGithub])
 
   if (loading) {
     return <div className="h-screen flex items-center justify-center">Loading data ! Please wait.</div>

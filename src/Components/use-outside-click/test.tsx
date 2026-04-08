@@ -3,14 +3,10 @@ import useOutSideClick from ".";
 
 
 export default function UseOnClickOutSideTest() {
-  const ref = useRef();
-  useOutSideClick(ref, () => setShowContent(false));
-
   const [showContent, setShowContent] = useState(false);
+  const ref = useRef<HTMLDivElement | null>(null);
 
-
-
-
+  useOutSideClick(ref, () => setShowContent(false));
 
   return (
     <div>

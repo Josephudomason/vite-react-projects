@@ -13,7 +13,7 @@ export default function Accordian() {
   };
 
   function handleMultiSelection(getCurrentId: number) {
-    let cpyMultiple = [...multiIDSelected];
+    const cpyMultiple = [...multiIDSelected];
     const findIndexOfCurrentId = cpyMultiple.indexOf(getCurrentId);
 
     if (findIndexOfCurrentId === -1) cpyMultiple.push(getCurrentId)

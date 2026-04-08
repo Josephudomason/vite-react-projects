@@ -11,29 +11,37 @@ export default function ScrollIndicator({ url }: { url: string }) {
   const [errorMsg, setErrorMsg] = useState<string>('');
   const [scrollPosition, setScrollPosition] = useState<number>(0);
 
-  async function fetchData(getUrl: string): Promise<void> {
-
-    try {
-      setLoading(true);
-      const res = await fetch(getUrl);
-      const data = await res.json()
-
-
-      if (data && data.products && data.products.length > 0) {
-        setData(data.products);
-        setLoading(false);
-      };
-
-    } catch (e: unknown) {
-      console.log(e)
-      setErrorMsg(e instanceof Error ? e.message : 'An unknown error occurred')
-
-    }
-  }
-
   useEffect(() => {
-    fetchData(url);
-  }, [url])
+    let isMounted = true;
+
+    const fetchData = async (getUrl: string): Promise<void> => {
+      try {
+        setLoading(true);
+        setErrorMsg('');
+        const res = await fetch(getUrl);
+        const nextData = await res.json();
+
+        if (isMounted && nextData?.products?.length > 0) {
+          setData(nextData.products);
+        }
+      } catch (e: unknown) {
+        console.log(e);
+        if (isMounted) {
+          setErrorMsg(e instanceof Error ? e.message : 'An unknown error occurred');
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    void fetchData(url);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [url]);
 
   function handleScroll() {
     console.log(document.body.scrollTop,
@@ -54,10 +62,7 @@ export default function ScrollIndicator({ url }: { url: string }) {
     window.addEventListener('scroll', handleScroll);
 
     return () => {
-      window.removeEventListener(
-        'scroll', () => { }
-        // 'scroll', handleScroll
-      )
+      window.removeEventListener('scroll', handleScroll);
     }
   }, [])
 

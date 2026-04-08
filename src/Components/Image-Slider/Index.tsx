@@ -18,25 +18,6 @@ export default function ImageSlider({ url, limit = 5, page = 1 }: ImageSliderPro
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
-  async function fetchImages(getUrl: string): Promise<void> {
-    try {
-      setLoading(true);
-      setErrorMsg(null);
-      const response = await fetch(`${getUrl}?page=${page}&limit=${limit}`);
-      const data: ImageItem[] = await response.json();
-
-      if (data && Array.isArray(data)) {
-        setImages(data);
-      } else {
-        setErrorMsg("Invalid data format received");
-      }
-    } catch (e) {
-      setErrorMsg(e instanceof Error ? e.message : "An error occurred");
-    } finally {
-      setLoading(false);
-    }
-  }
-
   function handlePrevious(): void {
     setCurrentSlide(currentSlide === 0 ? images.length - 1 : currentSlide - 1);
   }
@@ -50,9 +31,45 @@ export default function ImageSlider({ url, limit = 5, page = 1 }: ImageSliderPro
   }
 
   useEffect(() => {
-    if (url !== '') {
-      fetchImages(url);
+    if (url === '') {
+      return;
     }
+
+    let isMounted = true;
+
+    const fetchImages = async (getUrl: string): Promise<void> => {
+      try {
+        setLoading(true);
+        setErrorMsg(null);
+        const response = await fetch(`${getUrl}?page=${page}&limit=${limit}`);
+        const data: ImageItem[] = await response.json();
+
+        if (!isMounted) {
+          return;
+        }
+
+        if (Array.isArray(data)) {
+          setImages(data);
+          setCurrentSlide(0);
+        } else {
+          setErrorMsg("Invalid data format received");
+        }
+      } catch (e) {
+        if (isMounted) {
+          setErrorMsg(e instanceof Error ? e.message : "An error occurred");
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    void fetchImages(url);
+
+    return () => {
+      isMounted = false;
+    };
   }, [url, page, limit]);
 
   if (loading) {
